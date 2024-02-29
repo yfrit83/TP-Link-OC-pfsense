@@ -1,21 +1,25 @@
-unifi-pfsense
+omada-pfsense
 =============
 
-A script that installs the UniFi Controller software on pfSense and other FreeBSD systems
+A script that installs the Omada Controller software on pfSense and other FreeBSD systems Heavily based on UniFi-pfSense by jmbwell
+(John Burwell) (https://github.com/unofficial-unifi/unifi-pfsense) and TinWhisker (Daniel)(https://github.com/tinwhisker/tplink-eapcontroller-pfsense) and the startup script from an omada installation on an Debian vm machine.
 
+Warning : This procject forst commited on 2024-02-28 and is not currently tested on a pfSense router.*
+
+*I will remove the warning when a will test it and it's fully functionnal. This is a pre-release not a stable one!!!!
 
 Purpose
 -------
 
-The objective of this project is to develop and maintain a script that installs [Ubiquiti's](http://www.ubnt.com/) UniFi Controller software on FreeBSD-based systems, particularly the [pfSense](http://www.pfsense.org/) firewall.
+The objective of this project is to develop and maintain a script that installs [TP-Link Omada Controller's](https://www.tp-link.com/business-networking/) Omada Controller software on FreeBSD-based systems, particularly the [pfSense](http://www.pfsense.org/) firewall.
 
 
 Status
 ------
 
-The project provides an rc script to start and stop the UniFi controller, and an installation script to automatically download and install everything, including the rc script.
+The project provides an rc script to start and stop the Omada controller, and an installation script to automatically download and install everything, including the rc script.
 
-This project uses the latest branch from Ubiquiti rather than the LTS branch. From December 2020, this means the 6.x branch.
+This project uses the latest branch from Omada rather than the LTS branch. From December 2020, this means the 6.x branch.
 
 
 Compatibility
@@ -29,19 +33,19 @@ This script *will destroy* a legacy BIOS system booting from an MBR formatted ZF
 Challenges
 ----------
 
-Because the UniFi Controller software is proprietary, it cannot be built from source and cannot be included directly in a package. To work around this, we can download the UniFi controller software directly from Ubiquiti during the installation process.
+Because the Omada Controller software is proprietary, it cannot be built from source and cannot be included directly in a package. To work around this, we can download the Omada controller software directly from Tp-link during the installation process.
 
-Because Ubiquiti does not provide a standard way to fetch the software (not even a "latest" symlink), we cannot identify the appropriate version to download from Ubiquiti programmatically. It will be up to the package maintainers to keep the package up to date with the latest version of the software available from Ubiquiti.
+Because TP-Link does not provide a standard way to fetch the software (not even a "latest" symlink), we cannot identify the appropriate version to download from Tp-Link programmatically. It will be up to the package maintainers to keep the package up to date with the latest version of the software available from TP-Link.
 
 
-Upgrading UniFi controller
+Upgrading Omada controller
 --------------------------
 
 At the very least, back up your configuration before proceeding.
 
-Be sure to track [Ubiquiti's release notes](https://community.ui.com/releases) for information on the changes and what to expect. Updates, even minor ones, sometimes change things. Some involve database upgrades that can take some time. Features come and go, and behaviors change. Proceed with caution.
+Be sure to track [Omada's release notes](https://community.tp-link.com/en/business/forum/topic/245226) for information on the changes and what to expect. Updates, even minor ones, sometimes change things. Some involve database upgrades that can take some time. Features come and go, and behaviors change. Proceed with caution.
 
-You should know that upgrading from earlier versions may be no small task. Ubiquiti sometimes makes substantial changes, especially between major versions. Carefully consult [Ubiquiti's release notes](https://community.ui.com/releases) for upgrading considerations. Proceed with caution.
+You should know that upgrading from earlier versions may be no small task. TP-Link sometimes makes substantial changes, especially between major versions. Carefully consult [Omada's release notes](https://community.tp-link.com/en/business/forum/topic/245226) for upgrading considerations. Proceed with caution.
 
 
 Upgrading pfSense
@@ -49,7 +53,7 @@ Upgrading pfSense
 
 The pfSense updater will remove everything you install that didn't come through pfSense, including the packages installed by this script.
 
-Before updating pfSense, save a backup of your UniFi controller configuration to another system.
+Before updating pfSense, save a backup of your Omada controller configuration to another system.
 
 After updating pfSense, you will need to run this script again to restore the dependencies and the software.
 
@@ -63,12 +67,12 @@ To install the controller software and the rc script:
 2. Run this one-line command, which downloads the install script from Github and executes it with sh:
 
   ```
-    fetch -o - https://tinyurl.com/3ukj9253 | sh -s
+    fetch -o - http://tinyurl.com/mr3mandj | sh -s
   ```
 
-The install script will install dependencies, download the UniFi controller software, make some adjustments, and start the UniFi controller.
+The install script will install dependencies, download the Omada controller software, make some adjustments, and start the Omada controller.
 
-The git.io link above should point to `https://raw.githubusercontent.com/unofficial-unifi/unifi-pfsense/master/install-unifi/install-unifi.sh`
+The git.io link above should point to `https://raw.githubusercontent.com/yfrit83/TP-Link-OC-pfsense/master/install-omada/install-omada.sh`
 
 
 Starting and Stopping
@@ -79,34 +83,34 @@ To start and stop the controller, use the `service` command from the command lin
 - To start the controller:
 
   ```
-    service unifi.sh start
+    service omada.sh start
   ```
-  The UniFi controller takes a few minutes to start. The 'start' command exits immediately while the startup continues in the background.
+  The Omada controller takes a few minutes to start. The 'start' command exits immediately while the startup continues in the background.
 
 - To stop the controller:
 
   ```
-    service unifi.sh stop
+    service omada.sh stop
   ```
-  The the stop command takes a while to execute, and then the shutdown continues for several minutes in the background. The rc script will wait until the command received and the shutdown is finished. The idea is to hold up system shutdown until the UniFi controller has a chance to exit cleanly.
+  The the stop command takes a while to execute, and then the shutdown continues for several minutes in the background. The rc script will wait until the command received and the shutdown is finished. The idea is to hold up system shutdown until the Omada controller has a chance to exit cleanly.
 
 
 After Installing
 ----------------
 
-After using this script to install the UniFi Controller software, check the [UniFi controller documentation](https://help.ui.com/hc/en-us/articles/360012282453-UniFi-Set-up-a-UniFi-Network-Controller#h_52fdb29d-86cc-4f07-8f09-bd6b7268b525) for next steps. 
+After using this script to install the Omada Controller software, check the [Omada controller documentation](https://www.tp-link.com/us/configuration-guides/quick_start_guide_for_omada_controller/) for next steps. 
 
 
 Troubleshooting
 ---------------
 
-Step one is to determine whether the issue you’ve encountered is with this script or with the UniFi controller software. 
+Step one is to determine whether the issue you’ve encountered is with this script or with the Omada controller software. 
 
 Issues with the script  might include problems downloading packages, installing packages, interactions with pfSense such as dependency packages being deleted after updates, or incorrect dependencies being downloaded. Feel free to open an issue for anything like this.
 
-Issues with the UniFi Controller software or its various dependencies might include not starting up, not listening on port 8443, exiting with a port conflict, crashing after startup, database errors, memory issues, file permissions, dependency conflicts, or the weather. You should troubleshoot these issues as you would on any other installation of UniFi Controller. For some, the first stop is UniFi technical support; for others, ready answers to most questions about setting up UniFi controller are found most quickly on the UniFi forums.
+Issues with the Omada Controller software or its various dependencies might include not starting up, not listening on port 8443, exiting with a port conflict, crashing after startup, database errors, memory issues, file permissions, dependency conflicts, or the weather. You should troubleshoot these issues as you would on any other installation of Omada Controller. For some, the first stop is Omada technical support; for others, ready answers to most questions about setting up Omada controller are found most quickly on the Omada forums.
 
-It may turn out that some issue with the UniFi Controller software is caused by something this script is doing, like if MongoDB won’t start because you’re running it on a PDP-8 with 12-bit words, and this script is installing the build of MongoDB for PDP-11 systems with 16-bit words. In a case like that, if you can connect the behavior of the UniFi Controller with the actions taken by the script, please open an issue, or, better yet, fork and fix and submit a PR.
+It may turn out that some issue with the Omada Controller software is caused by something this script is doing, like if MongoDB won’t start because you’re running it on a PDP-8 with 12-bit words, and this script is installing the build of MongoDB for PDP-11 systems with 16-bit words. In a case like that, if you can connect the behavior of the Omada Controller with the actions taken by the script, please open an issue, or, better yet, fork and fix and submit a PR.
 
 ### Java compatibility on FreeBSD
 
@@ -123,55 +127,25 @@ pkg remove -y javavmwrapper
 pkg remove -y java-zoneinfo
   ```
 
-### Compatibility upgrade to MONGODB 4.2 (for those using MongoDB 4.2 or having DB compatibility problems)
-
-The following is a workaround for upgrading MongoDB 3.6 to MonggoDB 4.2 to resolve conflict and crashes in Unifi Controller related to MongoDB versions.
-contributed by user ccottam and johnkeates.
-
-1. Install the May 30 version first (https://github.com/unofficial-unifi/unifi-pfsense/blob/e51c3a6f9b55080d1e9b6100a8d42daa30641ba9/install-unifi/install-unifi.sh) to get a working mongo 3.6 database and make sure everything still works.
-(if you are unable to install this, try going directly to step 2)
-
-2. Install a mongo 4.0 version: (Jun 1) https://raw.githubusercontent.com/unofficial-unifi/unifi-pfsense/4167b09685d1bdf881d9076ba01d8ff2ab173a81/install-unifi/install-unifi.sh
-
-3. Set the feature version to 4.0:
-having installed mongodb 4.0, run the following command in shell to set compatibility feature
-
-  ```
-cmd> mongo localhost:27117
-  ```
-  ```
-cmd> db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } )
-response> { "featureCompatibilityVersion" : { "version" : "3.6" }, "ok" : 1 }
-cmd>  db.adminCommand( { setFeatureCompatibilityVersion: "4.0" } )
-response> { "ok" : 1 }
-cmd> db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } )
-response> { "featureCompatibilityVersion" : { "version" : "4.0" }, "ok" : 1 }
-  ```
-4. Install the newer Jun 1 version next (upgrades to 4.2) (https://raw.githubusercontent.com/unofficial-unifi/unifi-pfsense/c04a44f34f7c9c7c4e358d43dd7d74b1e676ef6a/install-unifi/install-unifi.sh)
-At this point you have a mongodb that was upgraded from 3.6 to 4.0, the database itself has been upgraded to be 4.0 compatible, finally mongodb 4.2 has been installed. Any database repairs will be handled automatically by the installation script.
-
-5. Install the latest version of Unifi Controller
-
-
 Uninstalling
 ------------
 
 This script does three things:
 1. Download and install required dependency packages
-2. Download and unpack the UniFi controller software binaries from Ubiquiti
-3. Install an rc script so that the UniFi controller can be started and stopped with `service`
+2. Download and unpack the Omada controller software binaries from Ubiquiti
+3. Install an rc script so that the Omada controller can be started and stopped with `service`
 
 Uninstalling therefore means one of two things:
-- Removing the UniFi controller software at `/usr/local/UniFi` and removing the rc script at `/usr/local/etc/rc.d/unifi.sh`
+- Removing the Omada controller software at `/opt/tplink/EAPController` and removing the rc script at `/usr/local/etc/rc.d/omada.sh`
 - Removing the dependency packages that were installed
 
-### Uninstall the UniFi controller software
+### Uninstall the Omada controller software
 
 1. Back up your configuration, if you intend to keep it.
-2. Remove the UniFi controller software binaries and rc script:
+2. Remove the Omada controller software binaries and rc script:
     ```
-      rm -rf /usr/local/UniFi
-      rm /usr/local/etc/rc.d/unifi.sh
+      rm -rf /opt/tplink/EAPController
+      rm /usr/local/etc/rc.d/omada.sh
     ```
 
 ### Removing the dependency packages
@@ -184,9 +158,9 @@ Note that, on pfSense, all of them will probably be removed anyway the next time
 Contributing
 ------------
 
-### UniFi controller updates
+### Omada controller updates
 
-The main area of concern is keeping up with Ubiquiti's updates. I don't know of a way to automatically grab the URL to the current version, though there has been work done on this. For now we have to commit an update directly to the install.sh script with every UniFi release.
+The main area of concern is keeping up with Ubiquiti's updates. I don't know of a way to automatically grab the URL to the current version, though there has been work done on this. For now we have to commit an update directly to the install.sh script with every Omada release.
 
 If you're aware of an update before I am:
 
@@ -217,27 +191,26 @@ Of course. That's why it's on github.
 Roadmap
 -------
 
-This project may never reach its original goal of becoming a pfSense package. The packaging scheme for pfSense has changed. Doing this as a pfSense package requires doing it as a FreeBSD package first. Doing it as a FreeBSD package means we may as well make it portable to other FreeBSD systems. All of this changes how this would be implemented. Some of the concepts we can borrow, but it's substantially new work. Moreover, because the requirements of the UniFi controller deviate from what's strictly available in the FreeBSD package repos, I'm not even sure it's possible.
+This project may never reach its original goal of becoming a pfSense package. The packaging scheme for pfSense has changed. Doing this as a pfSense package requires doing it as a FreeBSD package first. Doing it as a FreeBSD package means we may as well make it portable to other FreeBSD systems. All of this changes how this would be implemented. Some of the concepts we can borrow, but it's substantially new work. Moreover, because the requirements of the Omada controller deviate from what's strictly available in the FreeBSD package repos, I'm not even sure it's possible.
 
-As a helper script for installing the UniFi controller, this tool remains effective and robust, which is great. I see no reason not to continue development here.
+As a helper script for installing the Omada controller, this tool remains effective and robust, which is great. I see no reason not to continue development here.
 
-It is also less pfsense-specific than originally imagined. If you're here to run UniFi on your NAS, welcome!
+It is also less pfsense-specific than originally imagined. If you're here to run Omada on your NAS, welcome!
 
-With all this in mind, the future of this project is clearly as an installation tool, and I envision enhancements to it as such. So let's just make it a smart and capable installer for UniFi Controller on FreeBSD-type systems.
+With all this in mind, the future of this project is clearly as an installation tool, and I envision enhancements to it as such. So let's just make it a smart and capable installer for Omada Controller on FreeBSD-type systems.
 
 Licensing
 ---------
 
 This project itself is licensed according to the two-clause BSD license.
 
-The UniFi Controller software is licensed as-is with no warranty, according to the README included with the software.
+They nnt have any acceptance of the EULA on the web site is not required before downloading the software.
 
-[Ubiquiti has indicated via email](https://github.com/unofficial-unifi/unifi-pfsense/wiki/Tacit-Approval) that acceptance of the EULA on the web site is not required before downloading the software.
-
+Terms of use right here : https://www.tp-link.com/ca/about-us/privacy/#sec_b 
 
 Resources
 ----------
 
-- [UniFi product information page](https://www.ubnt.com/software/)
-- [UniFI download and documentation](https://www.ubnt.com/download/unifi)
-- [UniFi updates blog](https://community.ubnt.com/t5/UniFi-Updates-Blog/bg-p/Blog_UniFi)
+- [Omada product information page](https://static.tp-link.com/product-overview/2021/202107/20210719/Controller%20Datasheet.pdf)
+- [Omada download and documentation](https://www.tp-link.com/us/support/download/omada-software-controller/)
+- [Omada updates blog](https://community.tp-link.com/en/business/forum/topic/245226))

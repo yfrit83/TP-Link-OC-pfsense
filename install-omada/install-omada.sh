@@ -1,14 +1,16 @@
 #!/bin/sh
 
-# install-unifi.sh
-# Installs the Uni-Fi controller software on a FreeBSD machine (presumably running pfSense).
+# install-omada.sh
+# Install the TP-Link Omada Controller software on a FreeBSD machine (presumably running pfSense).
 
-# The latest version of UniFi:
-UNIFI_SOFTWARE_URL="https://dl.ui.com/unifi/7.2.97/UniFi.unix.zip"
+# The latest version of Omada Controller:
+OMADA_SOFTWARE_URL="https://static.tp-link.com/upload/software/2024/202401/20240112/Omada_SDN_Controller_v5.13.23_linux_x64.tar.gz"
 
 
 # The rc script associated with this branch or fork:
-RC_SCRIPT_URL="https://raw.githubusercontent.com/unofficial-unifi/unifi-pfsense/master/rc.d/unifi.sh"
+RC_SCRIPT_URL="https://raw.githubusercontent.com/yfrit83/TP-Link-OC-pfsense/master/rc.d/omada.sh"
+
+JRE_HOME="/usr/local/openjdk8/jre"
 
 CURRENT_MONGODB_VERSION=mongodb42
 
@@ -36,34 +38,34 @@ FREEBSD_PACKAGE_LIST_URL="${FREEBSD_PACKAGE_URL}packagesite.pkg"
 
 # Stop the controller if it's already running...
 # First let's try the rc script if it exists:
-if [ -f /usr/local/etc/rc.d/unifi.sh ]; then
-  echo -n "Stopping the unifi service..."
-  /usr/sbin/service unifi.sh stop
+if [ -f /usr/local/etc/rc.d/omada.sh ]; then
+  echo -n "Stopping the omada service..."
+  /usr/sbin/service omada.sh stop
   echo " done."
 fi
 
-# Then to be doubly sure, let's make sure ace.jar isn't running for some other reason:
-if [ $(ps ax | grep -c "/usr/local/UniFi/lib/[a]ce.jar start") -ne 0 ]; then
+# Then to be doubly sure, let's make sure omada *.jar isn't running for some other reason:
+if [ $(ps ax | grep "eap.home=/opt/tplink/EAPController") -ne 0 ]; then
   echo -n "Killing ace.jar process..."
-  /bin/kill -15 `ps ax | grep "/usr/local/UniFi/lib/[a]ce.jar start" | awk '{ print $1 }'`
+  /bin/kill -15 `ps ax | grep "eap.home=/opt/tplink/EAPController" | awk '{ print $1 }'`
   echo " done."
 fi
 
 # And then make sure mongodb doesn't have the db file open:
-if [ $(ps ax | grep -c "/usr/local/UniFi/data/[d]b") -ne 0 ]; then
+if [ $(ps ax | grep -c "/opt/tplink/EAPController/data/[d]b") -ne 0 ]; then
   echo -n "Killing mongod process..."
-  /bin/kill -15 `ps ax | grep "/usr/local/UniFi/data/[d]b" | awk '{ print $1 }'`
+  /bin/kill -15 `ps ax | grep "/opt/tplink/EAPController/data/[d]b" | awk '{ print $1 }'`
   echo " done."
 fi
 
 # Repairs Mongodb database in case of corruption
-mongod --dbpath /usr/local/UniFi/data/db --repair
+mongod --dbpath /opt/tplink/EAPController/data/db --repair
 
 # If an installation exists, we'll need to back up configuration:
-if [ -d /usr/local/UniFi/data ]; then
-  echo "Backing up UniFi data..."
-  BACKUPFILE=/var/backups/unifi-`date +"%Y%m%d_%H%M%S"`.tgz
-  /usr/bin/tar -vczf ${BACKUPFILE} /usr/local/UniFi/data
+if [ -d /opt/tplink/EAPController/data ]; then
+  echo "Backing up omada data..."
+  BACKUPFILE=/var/backups/omadac-`date +"%Y%m%d_%H%M%S"`.tgz
+  /usr/bin/tar -vczf ${BACKUPFILE} /opt/tplink/EAPController/data
 fi
 
 # Add the fstab entries apparently required for OpenJDKse:
@@ -96,7 +98,7 @@ echo " done."
 
 
 
-# Install mongodb, OpenJDK, and unzip (required to unpack Ubiquiti's download):
+# Install mongodb, OpenJDK, and tar (required to unpack Omada download):
 # -F skips a package if it's already installed, without throwing an error.
 echo "Installing required packages..."
 #uncomment below for pfSense 2.2.x:
@@ -156,8 +158,8 @@ AddPkg libinotify
 AddPkg javavmwrapper
 AddPkg java-zoneinfo
 AddPkg openjdk8
-AddPkg snappyjava
-AddPkg snappy
+#AddPkg snappyjava
+#AddPkg snappy
 AddPkg cyrus-sasl
 AddPkg icu
 AddPkg boost-libs
@@ -170,71 +172,57 @@ rm packagesite.*
 
 echo " done."
 
-# Switch to a temp directory for the Unifi download:
-cd `mktemp -d -t unifi`
+# Switch to a temp directory for the OMADA Controller download:
+cd `mktemp -d -t tplink`
 
 # Download the controller from Ubiquiti (assuming acceptance of the EULA):
-echo -n "Downloading the UniFi controller software..."
-/usr/bin/fetch ${UNIFI_SOFTWARE_URL}
+echo -n "Downloading the omada controller software..."
+/usr/bin/fetch ${OMADA_SOFTWARE_URL} -o Omada_Controller.tar.gz
 echo " done."
 
 # Unpack the archive into the /usr/local directory:
 # (the -o option overwrites the existing files without complaining)
-echo -n "Installing UniFi controller in /usr/local..."
-/usr/local/bin/unzip -o UniFi.unix.zip -d /usr/local
+echo -n "Installing OMADA Controller in /opt/tplink/EAPController..."
+mkdir -p /opt/tplink/EAPController
+tar -xvzC /opt/tplink/EAPController -f Omada_Controller.tar.gz --strip-components=1
 echo " done."
 
-# Update Unifi's symbolic link for mongod to point to the version we just installed:
+# Update OMADA's symbolic link for mongod to point to the version we just installed:
 echo -n "Updating mongod link..."
-/bin/ln -sf /usr/local/bin/mongod /usr/local/UniFi/bin/mongod
+/bin/ln -sf /usr/local/bin/mongod /opt/tplink/EAPController/bin/mongod
+/bin/ln -sf /usr/local/bin/mongo /opt/tplink/EAPController/bin/mongo
 echo " done."
 
-# If partition size is < 4GB, add smallfiles option to mongodb
-echo -n "Checking partition size..."
-if [ `df -k | awk '$NF=="/"{print $2}'` -le 4194302 ]; then
-  echo -e "\nunifi.db.extraargs=--smallfiles\n" >> /usr/local/UniFi/data/system.properties
-fi
+# Update OMADA's symbolic link for Java to point to the version we just installed:
+echo -n "Updating Java link..."
+/bin/ln -sf ${JAVA_HOME} /opt/tplink/EAPController/jre
 echo " done."
-
-# Replace snappy java library to support AP adoption with latest firmware:
-echo -n "Updating snappy java..."
-unifizipcontents=`zipinfo -1 UniFi.unix.zip`
-upstreamsnappyjavapattern='/(snappy-java-[^/]+\.jar)$'
-# Make sure exactly one match is found
-if [ $(echo "${unifizipcontents}" | egrep -c ${upstreamsnappyjavapattern}) -eq 1 ]; then
-  upstreamsnappyjava="/usr/local/UniFi/lib/`echo \"${unifizipcontents}\" | pcregrep -o1 ${upstreamsnappyjavapattern}`"
-  mv "${upstreamsnappyjava}" "${upstreamsnappyjava}.backup"
-  cp /usr/local/share/java/classes/snappy-java.jar "${upstreamsnappyjava}"
-  echo " done."
-else
-  echo "ERROR: Could not locate UniFi's snappy java! AP adoption will most likely fail"
-fi
 
 # Fetch the rc script from github:
 echo -n "Installing rc script..."
-/usr/bin/fetch -o /usr/local/etc/rc.d/unifi.sh ${RC_SCRIPT_URL}
+/usr/bin/fetch -o /usr/local/etc/rc.d/omada.sh ${RC_SCRIPT_URL}
 echo " done."
 
 # Fix permissions so it'll run
-chmod +x /usr/local/etc/rc.d/unifi.sh
+chmod +x /usr/local/etc/rc.d/omada.sh
 
 # Add the startup variable to rc.conf.local.
 # Eventually, this step will need to be folded into pfSense, which manages the main rc.conf.
 # In the following comparison, we expect the 'or' operator to short-circuit, to make sure the file exists and avoid grep throwing an error.
-if [ ! -f /etc/rc.conf.local ] || [ $(grep -c unifi_enable /etc/rc.conf.local) -eq 0 ]; then
-  echo -n "Enabling the unifi service..."
-  echo "unifi_enable=YES" >> /etc/rc.conf.local
+if [ ! -f /etc/rc.conf.local ] || [ $(grep -c omada_enable /etc/rc.conf.local) -eq 0 ]; then
+  echo -n "Enabling the omada service..."
+  echo "omada_enable=YES" >> /etc/rc.conf.local
   echo " done."
 fi
 
 # Restore the backup:
 if [ ! -z "${BACKUPFILE}" ] && [ -f ${BACKUPFILE} ]; then
-  echo "Restoring UniFi data..."
-  mv /usr/local/UniFi/data /usr/local/UniFi/data-`date +%Y%m%d-%H%M`
+  echo "Restoring omadac data..."
+  mv /opt/tplink/EAPController/data /opt/tplink/EAPController/data-`date +%Y%m%d-%H%M`
   /usr/bin/tar -vxzf ${BACKUPFILE} -C /
 fi
 
 # Start it up:
-echo -n "Starting the unifi service..."
-/usr/sbin/service unifi.sh start
+echo -n "Starting the omada service..."
+/usr/sbin/service omada.sh start
 echo " done."
